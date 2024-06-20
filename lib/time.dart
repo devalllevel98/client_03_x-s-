@@ -38,7 +38,7 @@ class _RealTimeClockState extends State<RealTimeClock> {
                 Text(
                   _getTimeString(),
                   style: TextStyle(
-                    fontSize: 30,
+                    fontSize: 20,
                     fontWeight: FontWeight.bold,
                   ),
                 ),

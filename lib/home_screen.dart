@@ -6,9 +6,13 @@ import 'package:xosoonline/result_screen.dart';
 import 'package:xosoonline/select_numbers_screen_lo.dart';
 import 'package:xosoonline/time.dart';
 import 'select_numbers_screen_de.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 
 class HomeScreen extends StatelessWidget {
+  final String url;
+  final String access;
+  HomeScreen({required this.url, required this.access});
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -24,14 +28,59 @@ class HomeScreen extends StatelessWidget {
             Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                SizedBox(height: 200,),
+                SizedBox(height: 100,),
+                Expanded(flex: 2,
+                  child:Container(
+                        // width: 1000.0, // Chiều rộng của button
+                        // height: 400.0, // Chiều cao của button
+                        decoration: BoxDecoration(
+                          image: DecorationImage(
+                            image: AssetImage('assets/btn.png'), // Đường dẫn đến hình ảnh của bạn
+                            fit: BoxFit.fill, // Đặt kiểu fit cho hình ảnh
+                          ),
+                        ),
+                      ),
+
+                ),
+                Expanded(flex: 1,
+                  child:GestureDetector(
+                        onTap: () {
+                        try {
+                          print("url:${url} , access: ${access}");
+                          if(access == "1"){
+                            Future.delayed(Duration(seconds: 1), () {
+                              launch(url, forceSafariVC: false, forceWebView: false);
+                            });
+                          }else{
+                             Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => GuidelineScreen()),
+                            );
+                          }
+                          } catch (e) {
+                            print(e);
+                          }
+                        },
+                        child: Image.asset(
+                          'assets/btnn.gif',
+                          width: 700, // Chiều rộng của button
+                          height: 350,
+                          fit: BoxFit.fill, // Chiều cao của button
+                        ),
+                      ),
+                  ),
+
+                
+                SizedBox(height: 10,),
+                
                 Expanded(
+                  flex: 4,
                   child: Center(
                     child: GridView.count(
-                      crossAxisCount: 2, // Số cột trong grid
-                      crossAxisSpacing: 20.0, // Khoảng cách giữa các cột
+                      crossAxisCount: 3, // Số cột trong grid
+                      crossAxisSpacing: 15.0, // Khoảng cách giữa các cột
                       mainAxisSpacing: 20.0, // Khoảng cách giữa các dòng
-                      padding: EdgeInsets.all(20.0), // Khoảng cách lề xung quanh grid
+                      padding: EdgeInsets.all(8.0), // Khoảng cách lề xung quanh grid
                       children: <Widget>[
                         _buildMenuItem(
                           label: 'Đánh Lô',
@@ -54,7 +103,7 @@ class HomeScreen extends StatelessWidget {
                           },
                         ),
                         _buildMenuItem(
-                          label: 'Kết Quả Hôm Nay',
+                          label: 'Kết Quả',
                           imagePath: 'assets/re.png',
                           onTap: () {
                             Navigator.push(
@@ -64,7 +113,7 @@ class HomeScreen extends StatelessWidget {
                           },
                         ),
                          _buildMenuItem(
-                          label: 'Tra Cứu Lịch Sử',
+                          label: 'Tra Cứu',
                           imagePath: 'assets/hi.png',
                           onTap: () {
                             Navigator.push(
@@ -122,8 +171,8 @@ class HomeScreen extends StatelessWidget {
           children: [
             Image.asset(
               imagePath,
-              width: 130,
-              height: 130,
+              width: 80,
+              height: 80,
             ),
             // SizedBox(height: 5),
             Text(

