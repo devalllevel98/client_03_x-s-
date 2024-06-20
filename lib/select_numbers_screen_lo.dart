@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'result_screen.dart';
-
+import 'dart:convert';
 class SelectNumbersScreenLo extends StatefulWidget {
   @override
   _SelectNumbersScreenLoState createState() => _SelectNumbersScreenLoState();
@@ -19,20 +19,20 @@ class _SelectNumbersScreenLoState extends State<SelectNumbersScreenLo> {
 
   void checkDailySelection() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? savedDate = prefs.getString('selectedDateLo');
-    DateTime now = DateTime.now();
-    String currentDate = '${now.year}-${now.month}-${now.day}';
+    String? jsonString = prefs.getString('selectedNumbersLoMap');
+    if (jsonString != null) {
+      Map<String, dynamic> jsonMap = json.decode(jsonString);
+      DateTime now = DateTime.now();
+      String currentDate = '${now.year}-${now.month}-${now.day}';
 
-    if (savedDate != currentDate) {
-      prefs.remove('selectedNumbersLo');
-      prefs.remove('selectedDateLo');
-    } else {
-      List<String>? savedNumbers = prefs.getStringList('selectedNumbersLo');
-      if (savedNumbers != null) {
-        setState(() {
-          selectedNumbers = savedNumbers.map((e) => int.parse(e)).toList();
-          isConfirmed = true;
-        });
+      if (jsonMap.containsKey(currentDate)) {
+        List<String>? savedNumbers = List<String>.from(jsonMap[currentDate]);
+        if (savedNumbers != null) {
+          setState(() {
+            selectedNumbers = savedNumbers.map((e) => int.parse(e)).toList();
+            isConfirmed = true;
+          });
+        }
       }
     }
   }
@@ -241,43 +241,30 @@ class _SelectNumbersScreenLoState extends State<SelectNumbersScreenLo> {
           ),
         ],
       ),
-      // floatingActionButton: FloatingActionButton(
-      //   onPressed: () async {
-      //     if (isConfirmed) {
-      //       Navigator.push(
-      //         context,
-      //         MaterialPageRoute(builder: (context) => ResultScreen(selectedNumbers: selectedNumbers)),
-      //       );
-      //     } else {
-      //       showDialog(
-      //         context: context,
-      //         builder: (context) => AlertDialog(
-      //           title: Text('Thông báo'),
-      //           content: Text('Vui lòng xác nhận chọn đúng 10 số.'),
-      //           actions: [
-      //             TextButton(
-      //               onPressed: () {
-      //                 Navigator.of(context).pop();
-      //               },
-      //               child: Text('OK'),
-      //             ),
-      //           ],
-      //         ),
-      //       );
-      //     }
-      //   },
-      //   child: Icon(Icons.check),
-      // ),
-   
     );
   }
 
   void saveSelectedNumbersToLocal() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setStringList('selectedNumbersLo', selectedNumbers.map((e) => e.toString()).toList());
 
+    // Lấy dữ liệu đã lưu (nếu có) từ SharedPreferences
+    String? jsonString = prefs.getString('selectedNumbersLoMap');
+    Map<String, List<String>> selectedNumbersLoMap = {};
+
+    if (jsonString != null) {
+      Map<String, dynamic> jsonMap = json.decode(jsonString);
+      jsonMap.forEach((key, value) {
+        selectedNumbersLoMap[key] = List<String>.from(value);
+      });
+    }
+
+    // Cập nhật dữ liệu với ngày hiện tại
     DateTime now = DateTime.now();
-    String selectedDate = '${now.year}-${now.month}-${now.day}';
-    prefs.setString('selectedDateLo', selectedDate);
+    String currentDate = '${now.year}-${now.month}-${now.day}';
+    selectedNumbersLoMap[currentDate] = selectedNumbers.map((e) => e.toString()).toList();
+
+    // Lưu lại dữ liệu vào SharedPreferences dưới dạng JSON
+    String updatedJsonString = json.encode(selectedNumbersLoMap);
+    prefs.setString('selectedNumbersLoMap', updatedJsonString);
   }
 }

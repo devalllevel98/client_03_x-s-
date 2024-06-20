@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
 
 class HistoryScreen extends StatefulWidget {
   @override
@@ -14,26 +15,27 @@ class _HistoryScreenState extends State<HistoryScreen> {
   @override
   void initState() {
     super.initState();
-    loadSelectedNumbersAndResults(selectedDate);
+    loadResultsForDate(selectedDate);
   }
 
-  void loadSelectedNumbersAndResults(DateTime date) async {
+  void loadResultsForDate(DateTime date) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String formattedDate = '${date.year}-${date.month}-${date.day}';
-    String? savedDate = prefs.getString('resultsDate_$formattedDate');
+    String? jsonStringHistory = prefs.getString('historyMap');
 
-    if (savedDate != null && savedDate == formattedDate) {
-      results = {
-        'Giai8': prefs.getStringList('Giai8_$formattedDate') ?? [],
-        'Giai7': prefs.getStringList('Giai7_$formattedDate') ?? [],
-        'Giai6': prefs.getStringList('Giai6_$formattedDate') ?? [],
-        'Giai5': prefs.getStringList('Giai5_$formattedDate') ?? [],
-        'Giai4': prefs.getStringList('Giai4_$formattedDate') ?? [],
-        'Giai3': prefs.getStringList('Giai3_$formattedDate') ?? [],
-        'Giai2': prefs.getStringList('Giai2_$formattedDate') ?? [],
-        'Giai1': prefs.getStringList('Giai1_$formattedDate') ?? [],
-        'GiaiDB': prefs.getStringList('GiaiDB_$formattedDate') ?? [],
-      };
+    if (jsonStringHistory != null) {
+      Map<String, dynamic> historyMap = json.decode(jsonStringHistory);
+      if (historyMap.containsKey(formattedDate)) {
+        dynamic historyData = historyMap[formattedDate];
+        if (historyData is List<dynamic>) {
+          List<String> resultList = historyData.map((item) => item.toString()).toList();
+          results = {formattedDate: resultList};
+        } else {
+          results = {};
+        }
+      } else {
+        results = {};
+      }
     } else {
       results = {};
     }
@@ -41,36 +43,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
     setState(() {
       resultsReady = true;
     });
-  }
-
-  Widget buildResultCard(String title, List<String> numbers) {
-    return Card(
-      child: Column(
-        children: [
-          Text(
-            title,
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-          ),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: numbers.map((number) {
-                return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                  child: Text(
-                    number,
-                    style: TextStyle(
-                      fontSize: 18,
-                      color: Colors.black,
-                    ),
-                  ),
-                );
-              }).toList().expand((element) => [element, Text(' - ')]).toList()..removeLast(),
-            ),
-          ),
-        ],
-      ),
-    );
   }
 
   Future<void> _selectDate(BuildContext context) async {
@@ -85,11 +57,10 @@ class _HistoryScreenState extends State<HistoryScreen> {
         selectedDate = picked;
         resultsReady = false; // Reset results
       });
-      loadSelectedNumbersAndResults(selectedDate);
+      loadResultsForDate(selectedDate);
     }
   }
 
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -128,6 +99,36 @@ class _HistoryScreenState extends State<HistoryScreen> {
               ],
             )
           : Center(child: CircularProgressIndicator()),
+    );
+  }
+
+  Widget buildResultCard(String title, List<String> numbers) {
+    return Card(
+      child: Column(
+        children: [
+          Text(
+            title,
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          ),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: numbers.map((number) {
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                  child: Text(
+                    number,
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: Colors.black,
+                    ),
+                  ),
+                );
+              }).toList().expand((element) => [element, Text(' - ')]).toList()..removeLast(),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

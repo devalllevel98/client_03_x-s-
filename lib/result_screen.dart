@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:math';
+import 'dart:convert';
 
 class ResultScreen extends StatefulWidget {
   @override
@@ -8,75 +9,82 @@ class ResultScreen extends StatefulWidget {
 }
 
 class _ResultScreenState extends State<ResultScreen> {
-  Map<String, List<String>> results = {};
+  Map<String, Map<String, List<String>>> results = {};
   bool resultsReady = false;
   List<int> selectedNumbersLo = [];
   List<int> selectedNumbersDe = [];
+  DateTime selectedDate = DateTime.now();
 
   @override
   void initState() {
     super.initState();
-    loadSelectedNumbers();
-    generateOrLoadResults();
+    loadSelectedNumbers(selectedDate);
+    generateOrLoadResults(selectedDate);
   }
 
-  
-
-  void loadSelectedNumbers() async {
+  void loadSelectedNumbers(DateTime date) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    List<String>? savedNumbersLo = prefs.getStringList('selectedNumbersLo');
-    List<String>? savedNumbersDe = prefs.getStringList('selectedNumbersDe');
+    String formattedDate = '${date.year}-${date.month}-${date.day}';
+    String? jsonStringLo = prefs.getString('selectedNumbersLoMap');
+    String? jsonStringDe = prefs.getString('selectedNumbersDeMap');
 
-    if (savedNumbersLo != null) {
-      setState(() {
-        selectedNumbersLo = savedNumbersLo.map((e) => int.parse(e)).toList();
-      });
-    }
-
-    if (savedNumbersDe != null) {
-      setState(() {
-        selectedNumbersDe = savedNumbersDe.map((e) => int.parse(e)).toList();
-      });
-    }
-  }
-
-  void generateOrLoadResults() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    DateTime now = DateTime.now();
-    String currentDate = '${now.year}-${now.month}-${now.day}';
-    List<String>? savedResults = prefs.getStringList(currentDate);
-
-    if (savedResults != null) {
-      // Load results from SharedPreferences
-      results = {
-        'Giai8': prefs.getStringList('Giai8')!,
-        'Giai7': prefs.getStringList('Giai7')!,
-        'Giai6': prefs.getStringList('Giai6')!,
-        'Giai5': prefs.getStringList('Giai5')!,
-        'Giai4': prefs.getStringList('Giai4')!,
-        'Giai3': prefs.getStringList('Giai3')!,
-        'Giai2': prefs.getStringList('Giai2')!,
-        'Giai1': prefs.getStringList('Giai1')!,
-        'GiaiDB': prefs.getStringList('GiaiDB')!,
-      };
+    if (jsonStringLo != null) {
+      Map<String, dynamic> jsonMapLo = json.decode(jsonStringLo);
+      if (jsonMapLo.containsKey(formattedDate)) {
+        setState(() {
+          selectedNumbersLo = List<String>.from(jsonMapLo[formattedDate])
+              .map((e) => int.parse(e))
+              .toList();
+        });
+      } else {
+        setState(() {
+          selectedNumbersLo = [];
+        });
+      }
     } else {
-      // Generate new results
-      var random = Random();
-      results = {
-        'Giai8': List.generate(1, (_) => (random.nextInt(100)).toString().padLeft(2, '0')),
-        'Giai7': List.generate(1, (_) => (random.nextInt(1000)).toString().padLeft(3, '0')),
-        'Giai6': List.generate(3, (_) => (random.nextInt(10000)).toString().padLeft(4, '0')),
-        'Giai5': List.generate(1, (_) => (random.nextInt(10000)).toString().padLeft(4, '0')),
-        'Giai4': List.generate(7, (_) => (random.nextInt(100000)).toString().padLeft(5, '0')),
-        'Giai3': List.generate(2, (_) => (random.nextInt(100000)).toString().padLeft(5, '0')),
-        'Giai2': List.generate(1, (_) => (random.nextInt(100000)).toString().padLeft(5, '0')),
-        'Giai1': List.generate(1, (_) => (random.nextInt(100000)).toString().padLeft(5, '0')),
-        'GiaiDB': List.generate(1, (_) => (random.nextInt(1000000)).toString().padLeft(6, '0')),
-      };
+      setState(() {
+        selectedNumbersLo = [];
+      });
+    }
+
+    if (jsonStringDe != null) {
+      Map<String, dynamic> jsonMapDe = json.decode(jsonStringDe);
+      if (jsonMapDe.containsKey(formattedDate)) {
+        setState(() {
+          selectedNumbersDe = List<String>.from(jsonMapDe[formattedDate])
+              .map((e) => int.parse(e))
+              .toList();
+        });
+      } else {
+        setState(() {
+          selectedNumbersDe = [];
+        });
+      }
+    } else {
+      setState(() {
+        selectedNumbersDe = [];
+      });
+    }
+  }
+
+  void generateOrLoadResults(DateTime date) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String formattedDate = '${date.year}-${date.month}-${date.day}';
+    String? jsonStringResults = prefs.getString('resultsMap');
+    Map<String, dynamic> resultsMap =
+        jsonStringResults != null ? json.decode(jsonStringResults) : {};
+
+    if (resultsMap.containsKey(formattedDate)) {
+      // Load results from SharedPreferences
+      List<dynamic> dailyResults = resultsMap[formattedDate];
+      results[formattedDate] = groupResultsByTitle(dailyResults);
+    } else {
+      // Generate random results and save to SharedPreferences
+      Map<String, List<String>> generatedResults = generateRandomResults();
+      results[formattedDate] = generatedResults;
 
       // Save results to SharedPreferences
-      List<String> resultsList = results.values.expand((list) => list).toList();
-      prefs.setStringList(currentDate, resultsList);
+      prefs.setString('resultsMap', json.encode({ ...resultsMap, formattedDate: flattenResults(generatedResults) }));
     }
 
     setState(() {
@@ -84,70 +92,109 @@ class _ResultScreenState extends State<ResultScreen> {
     });
   }
 
-  void saveResultToHistory(String title, List<String> numbers) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String formattedDate = DateTime.now().toString();
-    prefs.setStringList('historyTitle', [title]);
-    prefs.setStringList('historyNumbers', numbers);
+  Map<String, List<String>> groupResultsByTitle(List<dynamic> dailyResults) {
+    Map<String, List<String>> groupedResults = {};
+
+    dailyResults.forEach((result) {
+      String title = result['title'];
+      String number = result['number'];
+
+      if (groupedResults.containsKey(title)) {
+        groupedResults[title]!.add(number);
+      } else {
+        groupedResults[title] = [number];
+      }
+    });
+
+    return groupedResults;
   }
 
-  Widget buildResultCard(String title, List<String> numbers) {
-    return Card(
-      child: Column(
-        children: [
-          Text(
-            title,
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-          ),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: numbers.map((number) {
-                bool isWinnerLo = selectedNumbersLo.any((selected) => number.endsWith(selected.toString().padLeft(2, '0')));
-                bool isWinnerDe = selectedNumbersDe.any((selected) => number.endsWith(selected.toString().padLeft(2, '0')));
-                return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                  child: GestureDetector(
-                    onTap: () {
-                      if (isWinnerLo || isWinnerDe) {
-                        saveResultToHistory(title, numbers);
-                      }
-                    },
-                    child: Column(
-                      children: [
-                        Container(
+  List<dynamic> flattenResults(Map<String, List<String>> results) {
+    List<dynamic> flattenedResults = [];
+
+    results.forEach((title, numbers) {
+      numbers.forEach((number) {
+        flattenedResults.add({'title': title, 'number': number});
+      });
+    });
+
+    return flattenedResults;
+  }
+
+  Map<String, List<String>> generateRandomResults() {
+    Random random = Random();
+    Map<String, List<String>> randomResults = {
+      'Giai 8': [random.nextInt(100).toString()],
+      'Giai 7': [random.nextInt(1000).toString()],
+      'Giai 6': [random.nextInt(10000).toString(), random.nextInt(10000).toString(), random.nextInt(10000).toString()],
+      'Giai 5': [random.nextInt(10000).toString()],
+      'Giai 4': [random.nextInt(100000).toString(), random.nextInt(100000).toString(), random.nextInt(100000).toString(), random.nextInt(100000).toString(), random.nextInt(100000).toString(), random.nextInt(100000).toString(), random.nextInt(100000).toString()],
+      'Giai 3': [random.nextInt(100000).toString(), random.nextInt(100000).toString()],
+      'Giai 2': [random.nextInt(100000).toString()],
+      'Giai 1': [random.nextInt(100000).toString()],
+      'Giai DB': [random.nextInt(1000000).toString()]
+    };
+
+    return randomResults;
+  }
+
+Widget buildResultCard(String title, Map<String, List<String>> results) {
+  return Card(
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        ),
+        SizedBox(height: 8),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: results.entries.map((entry) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  entry.key,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                SizedBox(height: 4),
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: entry.value.map((value) {
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                        child: Container(
                           padding: EdgeInsets.all(8),
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(8),
-                            color: isWinnerLo || isWinnerDe ? Colors.red : Colors.transparent,
+                            color: Colors.blue,
                           ),
                           child: Text(
-                            number,
+                            value,
                             style: TextStyle(
                               fontSize: 18,
-                              color: isWinnerLo || isWinnerDe ? Colors.white : Colors.black,
+                              color: Colors.white,
                             ),
                           ),
                         ),
-                        if (isWinnerLo || isWinnerDe)
-                          Text(
-                            'Bạn đã đánh trúng',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.red,
-                            ),
-                          ),
-                      ],
-                    ),
+                      );
+                    }).toList(),
                   ),
-                );
-              }).toList().expand((element) => [element, Text(' - ')]).toList()..removeLast(),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+                ),
+                SizedBox(height: 8),
+              ],
+            );
+          }).toList(),
+        ),
+      ],
+    ),
+  );
+}
 
   @override
   Widget build(BuildContext context) {
@@ -157,33 +204,55 @@ class _ResultScreenState extends State<ResultScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Kết Quả Xổ Số'),
+        actions: [
+          IconButton(
+            onPressed: () async {
+              DateTime? picked = await showDatePicker(
+                context: context,
+                initialDate: selectedDate,
+                firstDate: DateTime(2000),
+                lastDate: DateTime.now(),
+              );
+              if (picked != null && picked != selectedDate) {
+                setState(() {
+                  selectedDate = picked;
+                  resultsReady = false; // Reset results
+                });
+                loadSelectedNumbers(selectedDate);
+                generateOrLoadResults(selectedDate);
+              }
+            },
+            icon: Icon(Icons.calendar_today),
+          ),
+        ],
       ),
       body: resultsReady
           ? ListView(
+              padding: EdgeInsets.all(16),
               children: [
                 if (!showResults) Center(child: Text('Kết quả chưa được mở')),
                 if (selectedNumbersLo.isEmpty && selectedNumbersDe.isEmpty)
                   Center(child: Text('Chưa chọn số')),
                 if (selectedNumbersLo.isNotEmpty || selectedNumbersDe.isNotEmpty)
                   Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
                         mainAxisAlignment: MainAxisAlignment.start,
                         children: [
-                          Text('Đánh Lô:'),
-                          SizedBox(width: 8), // Khoảng cách giữa tiêu đề và các đĩa số
+                          Text('Đánh Lô:', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                          SizedBox(width: 8),
                           Wrap(
-                            spacing: 4, // Khoảng cách giữa các đĩa số
+                            spacing: 4,
                             children: selectedNumbersLo.map((num) {
-                              String formattedNum = num.toString().padLeft(2, '0');
                               return Container(
                                 padding: EdgeInsets.all(4),
                                 decoration: BoxDecoration(
-                                  color: Color.fromARGB(255, 34, 0, 255),
+                                  color: Color.fromARGB(255, 0, 153, 255),
                                   borderRadius: BorderRadius.circular(20),
                                 ),
                                 child: Text(
-                                  formattedNum,
+                                  num.toString().padLeft(2, '0'),
                                   style: TextStyle(
                                     fontSize: 13,
                                     fontWeight: FontWeight.bold,
@@ -195,17 +264,14 @@ class _ResultScreenState extends State<ResultScreen> {
                           ),
                         ],
                       ),
-
-                      // Tương tự cho số đề nếu có
+                      SizedBox(height: 8),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.start,
                         children: [
-                          Text('Đánh đề:'),
+                          Text('Đánh Đề:', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                           SizedBox(width: 8),
-                          Wrap(
-                            spacing: 4,
+                          Wrap(                            spacing: 4,
                             children: selectedNumbersDe.map((num) {
-                              String formattedNum = num.toString().padLeft(2, '0');
                               return Container(
                                 padding: EdgeInsets.all(4),
                                 decoration: BoxDecoration(
@@ -213,7 +279,7 @@ class _ResultScreenState extends State<ResultScreen> {
                                   borderRadius: BorderRadius.circular(20),
                                 ),
                                 child: Text(
-                                  formattedNum,
+                                  num.toString().padLeft(2, '0'),
                                   style: TextStyle(
                                     fontSize: 13,
                                     fontWeight: FontWeight.bold,
@@ -227,13 +293,28 @@ class _ResultScreenState extends State<ResultScreen> {
                       ),
                     ],
                   ),
-                if (showResults)
-                  ...results.entries.map((entry) {
-                    return buildResultCard(entry.key, entry.value);
-                  }).toList(),
+                SizedBox(height: 16),
+                for (var entry in results.entries)
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Ngày ${entry.key}:',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(height: 8),
+                      buildResultCard(entry.key, entry.value),
+                      SizedBox(height: 16),
+                    ],
+                  ),
               ],
             )
           : Center(child: CircularProgressIndicator()),
     );
   }
 }
+
+                           

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'result_screen.dart';
+import 'dart:convert'; // Import thêm thư viện dart:convert
 
 class SelectNumbersScreenDe extends StatefulWidget {
   @override
@@ -17,26 +18,50 @@ class _SelectNumbersScreenDeState extends State<SelectNumbersScreenDe> {
     checkDailySelection();
   }
 
-  void checkDailySelection() async {
+  void saveSelectedNumbersToLocal() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? savedDate = prefs.getString('selectedDateDe');
+
+    // Lấy dữ liệu đã lưu (nếu có) từ SharedPreferences
+    String? jsonString = prefs.getString('selectedNumbersDeMap');
+    Map<String, List<String>> selectedNumbersDeMap = {};
+
+    if (jsonString != null) {
+      Map<String, dynamic> jsonMap = json.decode(jsonString);
+      jsonMap.forEach((key, value) {
+        selectedNumbersDeMap[key] = List<String>.from(value);
+      });
+    }
+
+    // Cập nhật dữ liệu với ngày hiện tại
     DateTime now = DateTime.now();
     String currentDate = '${now.year}-${now.month}-${now.day}';
+    selectedNumbersDeMap[currentDate] = selectedNumbers.map((e) => e.toString()).toList();
 
-    if (savedDate != currentDate) {
-      prefs.remove('selectedNumbersDe');
-      prefs.remove('selectedDateDe');
-    } else {
-      List<String>? savedNumbers = prefs.getStringList('selectedNumbersDe');
-      if (savedNumbers != null) {
-        setState(() {
-          selectedNumbers = savedNumbers.map((e) => int.parse(e)).toList();
-          isConfirmed = true;
-        });
+    // Lưu lại dữ liệu vào SharedPreferences dưới dạng JSON
+    String updatedJsonString = json.encode(selectedNumbersDeMap);
+    prefs.setString('selectedNumbersDeMap', updatedJsonString);
+  }
+
+  void checkDailySelection() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? jsonString = prefs.getString('selectedNumbersDeMap');
+
+    if (jsonString != null) {
+      Map<String, dynamic> jsonMap = json.decode(jsonString);
+      DateTime now = DateTime.now();
+      String currentDate = '${now.year}-${now.month}-${now.day}';
+
+      if (jsonMap.containsKey(currentDate)) {
+        List<String>? savedNumbers = List<String>.from(jsonMap[currentDate]);
+        if (savedNumbers != null) {
+          setState(() {
+            selectedNumbers = savedNumbers.map((e) => int.parse(e)).toList();
+            isConfirmed = true;
+          });
+        }
       }
     }
   }
-
   @override
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
@@ -240,43 +265,9 @@ class _SelectNumbersScreenDeState extends State<SelectNumbersScreenDe> {
           ),
         ],
       ),
-      // floatingActionButton: FloatingActionButton(
-      //   onPressed: () async {
-      //     if (isConfirmed) {
-      //       Navigator.push(
-      //         context,
-      //         MaterialPageRoute(builder: (context) => ResultScreen(selectedNumbers: selectedNumbers)),
-      //       );
-      //     } else {
-      //       showDialog(
-      //         context: context,
-      //         builder: (context) => AlertDialog(
-      //           title: Text('Thông báo'),
-      //           content: Text('Vui lòng xác nhận chọn đúng 2 số.'),
-      //           actions: [
-      //             TextButton(
-      //               onPressed: () {
-      //                 Navigator.of(context).pop();
-      //               },
-      //               child: Text('OK'),
-      //             ),
-      //           ],
-      //         ),
-      //       );
-      //     }
-      //   },
-      //   child: Icon(Icons.check),
-      // ),
-   
     );
   }
 
-  void saveSelectedNumbersToLocal() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setStringList('selectedNumbersDe', selectedNumbers.map((e) => e.toString()).toList());
 
-    DateTime now = DateTime.now();
-    String selectedDate = '${now.year}-${now.month}-${now.day}';
-    prefs.setString('selectedDateDe', selectedDate);
-  }
+
 }
