@@ -143,121 +143,64 @@ class _ResultScreenState extends State<ResultScreen> {
     return selectedNumbers.contains(lastTwoDigits) ? Colors.green : Colors.blue;
   }
 
-Widget buildResultCard(String title, Map<String, List<String>> results) {
-  List<String> wonPrizes = [];
-
-  // Function to check if the user has selected any winning numbers in a category
-  bool hasWonInCategory(String category, List<int> selectedNumbers) {
-    if (results.containsKey(category)) {
-      List<String> categoryResults = results[category]!;
-      return categoryResults.any((num) => selectedNumbers.contains(int.parse(num)));
-    }
-    return false;
-  }
-
-  // Check each prize category
-  bool isLoSelected = selectedNumbersLo.isNotEmpty && [
-    'Giai 8', 'Giai 7', 'Giai 6', 'Giai 5', 'Giai 4', 'Giai 3', 'Giai 2', 'Giai 1'
-  ].any((category) => hasWonInCategory(category, selectedNumbersLo));
-
-  bool isDeSelected = selectedNumbersDe.isNotEmpty && [
-    'Giai DB'
-  ].any((category) => hasWonInCategory(category, selectedNumbersDe));
-
-  return Card(
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          title,
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-        ),
-        SizedBox(height: 8),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: results.entries.map((entry) {
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  entry.key,
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
+  Widget buildResultCard(String title, Map<String, List<String>> results) {
+    return Card(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          ),
+          SizedBox(height: 8),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: results.entries.map((entry) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    entry.key,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                ),
-                SizedBox(height: 4),
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
-                    children: entry.value.map((value) {
-                      Color backgroundColor = getColorForNumber(value, selectedNumbersLo);
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                        child: Container(
-                          padding: EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(8),
-                            color: backgroundColor,
-                          ),
-                          child: Text(
-                            value,
-                            style: TextStyle(
-                              fontSize: 18,
-                              color: Colors.white,
+                  SizedBox(height: 4),
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: entry.value.map((value) {
+                        Color backgroundColor = getColorForNumber(value, selectedNumbersLo);
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                          child: Container(
+                            padding: EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(8),
+                              color: backgroundColor,
+                            ),
+                            child: Text(
+                              value,
+                              style: TextStyle(
+                                fontSize: 18,
+                                color: Colors.white,
+                              ),
                             ),
                           ),
-                        ),
-                      );
-                    }).toList(),
+                        );
+                      }).toList(),
+                    ),
                   ),
-                ),
-                SizedBox(height: 8),
-              ],
-            );
-          }).toList(),
-        ),
-        if (isLoSelected || isDeSelected)
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (isLoSelected)
-                  Row(
-                    children: [
-                      Text(
-                        'Kết quả Lô1: ',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                      ),
-                      SizedBox(width: 8),
-                      Text(
-                        'Chúc mừng bạn đã đánh trúng!',
-                        style: TextStyle(color: Colors.green, fontSize: 16, fontWeight: FontWeight.bold),
-                      ),
-                    ],
-                  ),
-                if (isDeSelected)
-                  Row(
-                    children: [
-                      Text(
-                        'Kết quả Đề: ',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                      ),
-                      SizedBox(width: 8),
-                      Text(
-                        'Chúc mừng bạn đã đánh trúng!',
-                        style: TextStyle(color: Colors.green, fontSize: 16, fontWeight: FontWeight.bold),
-                      ),
-                    ],
-                  ),
-              ],
-            ),
+                  SizedBox(height: 8),
+                ],
+              );
+            }).toList(),
           ),
-      ],
-    ),
-  );
-}
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
