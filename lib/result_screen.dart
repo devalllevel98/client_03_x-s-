@@ -171,6 +171,7 @@ Widget buildResultCard(String title, Map<String, List<String>> results) {
   }
 
   return Card(
+     color: Color.fromARGB(255, 234, 234, 234).withOpacity(0.9), 
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
@@ -256,35 +257,28 @@ String checkWinningNumbers(List<int> selectedNumbers, Map<String, Map<String, Li
 @override
 Widget build(BuildContext context) {
   DateTime now = DateTime.now();
-  bool showResults = now.hour >= 24; // Chỉ hiển thị sau 5 giờ chiều
+  bool showResults = now.hour >= 17; // Chỉ hiển thị sau 5 giờ chiều
 
   return Scaffold(
-    appBar: AppBar(
-      title: Text('Kết Quả Xổ Số Hôm Nay'),
-      // actions: [
-      //   IconButton(
-      //     onPressed: () async {
-      //       DateTime? picked = await showDatePicker(
-      //         context: context,
-      //         initialDate: selectedDate,
-      //         firstDate: DateTime(2000),
-      //         lastDate: DateTime.now(),
-      //       );
-      //       if (picked != null && picked != selectedDate) {
-      //         setState(() {
-      //           selectedDate = picked;
-      //           resultsReady = false; // Reset results
-      //         });
-      //         loadSelectedNumbers(selectedDate);
-      //         generateOrLoadResults(selectedDate);
-      //       }
-      //     },
-      //     icon: Icon(Icons.calendar_today),
-      //   ),
-      // ],
-   
-    ),
-    body: resultsReady
+    appBar:  AppBar(
+        title: 
+        Text(
+          'Kết Quả Xổ Số Hôm Nay',
+          style: TextStyle(
+            color: Colors.red,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        backgroundColor: const Color.fromARGB(255, 255, 255, 255), // Thêm màu nền cho AppBar
+      ),
+    body:Stack(
+      children: [
+        Positioned.fill(
+              child: Image.asset(
+            'assets/bg.png',
+            fit: BoxFit.fill,
+          )),
+     resultsReady
         ? ListView(
             padding: EdgeInsets.all(16),
             children: [
@@ -387,7 +381,22 @@ Widget build(BuildContext context) {
                     SizedBox(height: 8),
                   ],
                 ),
-            if (!showResults) Center(child: Text('Kết quả chưa được mở')),
+            if (!showResults) 
+            Center(
+              child:Column(
+                children: [
+                  SizedBox(height: 40,),
+               Image.asset(
+                'assets/nnot.png', // Đường dẫn đến hình ảnh trong assets
+                width: 500, // Độ rộng của hình ảnh
+                height: 500, // Độ cao của hình ảnh
+                fit: BoxFit.contain, // Đảm bảo hình ảnh vừa với khu vực được cung cấp
+              ),
+            
+                ],
+              ),
+
+            ),
               SizedBox(height: 16),
               for (var entry in results.entries)
                 if (entry.key == '${selectedDate.year}-${selectedDate.month}-${selectedDate.day}')
@@ -402,6 +411,11 @@ Widget build(BuildContext context) {
             ],
           )
         : Center(child: CircularProgressIndicator()),
+ 
+
+      ],
+    )
+
   );
 }
 

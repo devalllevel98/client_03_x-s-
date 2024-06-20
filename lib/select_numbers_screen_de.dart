@@ -75,16 +75,35 @@ class _SelectNumbersScreenDeState extends State<SelectNumbersScreenDe> {
     bool canConfirm = selectedNumbers.length == 2 && !isConfirmed;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Chọn Số Đánh Đề'),
+      appBar:  AppBar(
+        title: 
+        Text(
+          'Chọn Số Đánh Lô',
+          style: TextStyle(
+            color: Colors.red,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        backgroundColor: const Color.fromARGB(255, 255, 255, 255), // Thêm màu nền cho AppBar
       ),
       body: Stack(
         children: [
+        Positioned.fill(
+              child: Image.asset(
+            'assets/bg.png',
+            fit: BoxFit.fill,
+          )),
           Column(
             children: [
               Row(
                 children: [
-                  Text("Đánh đề: "),
+                  Text(
+                    '   Số Chọn: ',
+                    style: TextStyle(
+                      color: Colors.red,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                   Expanded(
                     child: Container(
                       height: 50,
@@ -148,47 +167,103 @@ class _SelectNumbersScreenDeState extends State<SelectNumbersScreenDe> {
                       ),
                     ),
                   ),
-                  Checkbox(
-                    value: isConfirmed,
-                    onChanged: (value) {
-                      if (!isConfirmed) {
-                        showDialog(
-                          context: context,
-                          builder: (context) => AlertDialog(
-                            title: Text('Xác nhận chọn số'),
-                            content: Text('Bạn có chắc chắn muốn xác nhận chọn số và không thể thay đổi sau này?'),
-                            actions: [
-                              TextButton(
-                                onPressed: () {
-                                  Navigator.of(context).pop();
-                                },
-                                child: Text('Không'),
-                              ),
-                              TextButton(
-                                onPressed: canConfirm
-                                    ? () {
-                                        setState(() {
-                                          isConfirmed = true;
-                                        });
-                                        saveSelectedNumbersToLocal();
-                                        Navigator.of(context).pop();
-                                      }
-                                    : null,
-                                child: Text('Đồng ý'),
-                              ),
-                            ],
-                          ),
-                        );
-                      }
-                    },
-                  ),
+
+                  // Checkbox(
+                  //   value: isConfirmed,
+                  //   onChanged: (value) {
+                  //     if (!isConfirmed) {
+                  //       showDialog(
+                  //         context: context,
+                  //         builder: (context) => AlertDialog(
+                  //           title: Text('Xác nhận chọn số'),
+                  //           content: Text('Bạn có chắc chắn muốn xác nhận chọn số và không thể thay đổi sau này?'),
+                  //           actions: [
+                  //             TextButton(
+                  //               onPressed: () {
+                  //                 Navigator.of(context).pop();
+                  //               },
+                  //               child: Text('Không'),
+                  //             ),
+                  //             TextButton(
+                  //               onPressed: canConfirm
+                  //                   ? () {
+                  //                       setState(() {
+                  //                         isConfirmed = true;
+                  //                       });
+                  //                       saveSelectedNumbersToLocal();
+                  //                       Navigator.of(context).pop();
+                  //                     }
+                  //                   : null,
+                  //               child: Text('Đồng ý'),
+                  //             ),
+                  //           ],
+                  //         ),
+                  //       );
+                  //     }
+                  //   },
+                  // ),
+               
                 ],
               ),
+              SizedBox(height: 50,),
+              ElevatedButton(
+          onPressed: () {
+            if (!isConfirmed) {
+              showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: Text('Xác nhận chọn số'),
+                  content: Text(
+                      'Bạn có chắc chắn muốn xác nhận chọn số và không thể thay đổi sau này?'),
+                  actions: [
+                    TextButton(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                      child: Text('Không'),
+                    ),
+                    TextButton(
+                      onPressed: canConfirm
+                          ? () {
+                              setState(() {
+                                isConfirmed = true;
+                              });
+                              saveSelectedNumbersToLocal();
+                              Navigator.of(context).pop();
+                            }
+                          : null,
+                      child: Text('Đồng ý'),
+                    ),
+                  ],
+                ),
+              );
+            }
+          },
+         
+          style: ElevatedButton.styleFrom(
+            foregroundColor: Colors.white,
+             backgroundColor:isConfirmed ? Colors.orange:Color.fromARGB(255, 0, 34, 255) , // Màu chữ của nút
+            shadowColor: Colors.black, // Màu bóng của nút
+            elevation: 10, // Độ cao của bóng
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(30), // Độ cong của viền nút
+            ),
+            padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10), // Khoảng cách padding
+          ),
+          child: Text(
+            isConfirmed ? 'Đã xác nhận' : 'Xác nhận chọn số',
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+             
               Expanded(
                 child: Align(
                   alignment: Alignment.bottomCenter,
                   child: FractionallySizedBox(
-                    heightFactor: 4 / 5,
+                    heightFactor: 1,
                     child: Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: GridView.builder(
@@ -271,3 +346,4 @@ class _SelectNumbersScreenDeState extends State<SelectNumbersScreenDe> {
 
 
 }
+

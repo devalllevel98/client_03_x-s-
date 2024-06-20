@@ -174,14 +174,15 @@ Widget buildResultCard(String title, Map<String, List<String>> results) {
   }
 
   return Card(
+     color: Color.fromARGB(255, 234, 234, 234).withOpacity(0.9), 
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Text(
-          title,
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-        ),
-        SizedBox(height: 8),
+        // Text(
+        //   title,
+        //   style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        // ),
+        SizedBox(height: 4),
         Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: results.entries.map((entry) {
@@ -263,8 +264,15 @@ Widget build(BuildContext context) {
   bool showResults = now.hour >= 24; // Chỉ hiển thị sau 5 giờ chiều
 
   return Scaffold(
+
     appBar: AppBar(
-      title:  Text('Kết Quả Ngày $formattedDate'),
+      title:Text(
+          'Kết Quả Ngày $formattedDate',
+          style: TextStyle(
+            color: Colors.red,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       actions: [
         IconButton(
           onPressed: () async {
@@ -272,7 +280,7 @@ Widget build(BuildContext context) {
               context: context,
               initialDate: selectedDate,
               firstDate: DateTime(2000),
-              lastDate: DateTime.now(),
+              lastDate: DateTime.now().subtract(Duration(days: 1))
             );
             if (picked != null && picked != selectedDate) {
               setState(() {
@@ -286,14 +294,25 @@ Widget build(BuildContext context) {
           icon: Icon(Icons.calendar_today),
         ),
       ],
+      backgroundColor: Colors.white,
    
     ),
-    body: resultsReady
+    body: Stack(
+      children: [
+        Positioned.fill(
+              child: Image.asset(
+            'assets/bg.png',
+            fit: BoxFit.fill,
+          )),
+    resultsReady
         ? ListView(
             padding: EdgeInsets.all(16),
             children: [
               if (selectedNumbersLo.isEmpty && selectedNumbersDe.isEmpty)
-                Center(child: Text('Chưa chọn số')),
+                Center(child: Text('Chưa chọn số',  style: TextStyle(
+                                    color: Color.fromARGB(255, 255, 30, 1),
+                                    fontWeight: FontWeight.bold,
+                                  ))),
               if (selectedNumbersLo.isNotEmpty || selectedNumbersDe.isNotEmpty)
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -334,7 +353,7 @@ Widget build(BuildContext context) {
                         Text('Kết Quả Đánh Lô: ', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                         SizedBox(width: 8),
                         Text(
-                         showResults ? checkWinningNumbers(selectedNumbersLo, results, selectedDate): "Chưa có kết quả!",
+                         checkWinningNumbers(selectedNumbersLo, results, selectedDate),
                           style: TextStyle(
                             fontSize: 16,
                             color: Colors.green,
@@ -352,7 +371,10 @@ Widget build(BuildContext context) {
                         Wrap(
                           spacing: 4,
                           children: selectedNumbersDe.isEmpty
-                              ? [Text('Chưa chọn')]
+                              ? [Text('Chưa chọn số', style: TextStyle(
+                                    color: const Color.fromARGB(255, 56, 48, 47),
+                                    fontWeight: FontWeight.bold,
+                                  ),)]
                               : selectedNumbersDe.map((num) {
                                   return Container(
                                     padding: EdgeInsets.all(4),
@@ -379,7 +401,7 @@ Widget build(BuildContext context) {
                         Text('Kết Quả Đánh đề: ', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                         SizedBox(width: 8),
                         Text(
-                         showResults? checkWinningNumbers(selectedNumbersDe, results, selectedDate):"Chưa có kết quả!",
+                         checkWinningNumbers(selectedNumbersDe, results, selectedDate),
                           style: TextStyle(
                             fontSize: 16,
                             color: Colors.green,
@@ -391,7 +413,7 @@ Widget build(BuildContext context) {
                     SizedBox(height: 8),
                   ],
                 ),
-            if (!showResults) Center(child: Text('Kết quả chưa được mở')),
+            // if (!showResults) Center(child: Text('Kết quả chưa được mở')),
               SizedBox(height: 16),
               for (var entry in results.entries)
                 if (entry.key == '${selectedDate.year}-${selectedDate.month}-${selectedDate.day}')
@@ -406,7 +428,12 @@ Widget build(BuildContext context) {
             ],
           )
         : Center(child: CircularProgressIndicator()),
-  );
+ 
+      ],
+    )
+    
+
+ );
 }
 
 }
