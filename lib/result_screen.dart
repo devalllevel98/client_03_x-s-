@@ -261,27 +261,27 @@ Widget build(BuildContext context) {
   return Scaffold(
     appBar: AppBar(
       title: Text('Kết Quả Xổ Số Hôm Nay'),
-      actions: [
-        IconButton(
-          onPressed: () async {
-            DateTime? picked = await showDatePicker(
-              context: context,
-              initialDate: selectedDate,
-              firstDate: DateTime(2000),
-              lastDate: DateTime.now(),
-            );
-            if (picked != null && picked != selectedDate) {
-              setState(() {
-                selectedDate = picked;
-                resultsReady = false; // Reset results
-              });
-              loadSelectedNumbers(selectedDate);
-              generateOrLoadResults(selectedDate);
-            }
-          },
-          icon: Icon(Icons.calendar_today),
-        ),
-      ],
+      // actions: [
+      //   IconButton(
+      //     onPressed: () async {
+      //       DateTime? picked = await showDatePicker(
+      //         context: context,
+      //         initialDate: selectedDate,
+      //         firstDate: DateTime(2000),
+      //         lastDate: DateTime.now(),
+      //       );
+      //       if (picked != null && picked != selectedDate) {
+      //         setState(() {
+      //           selectedDate = picked;
+      //           resultsReady = false; // Reset results
+      //         });
+      //         loadSelectedNumbers(selectedDate);
+      //         generateOrLoadResults(selectedDate);
+      //       }
+      //     },
+      //     icon: Icon(Icons.calendar_today),
+      //   ),
+      // ],
    
     ),
     body: resultsReady

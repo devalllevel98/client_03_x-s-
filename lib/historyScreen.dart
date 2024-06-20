@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:math';
 import 'dart:convert';
+import 'package:intl/intl.dart';
+
 
 class ResultHisScreen extends StatefulWidget {
   @override
@@ -257,11 +259,12 @@ String checkWinningNumbers(List<int> selectedNumbers, Map<String, Map<String, Li
 @override
 Widget build(BuildContext context) {
   DateTime now = DateTime.now();
+  String formattedDate = DateFormat('dd/MM/yyyy').format(selectedDate);
   bool showResults = now.hour >= 24; // Chỉ hiển thị sau 5 giờ chiều
 
   return Scaffold(
     appBar: AppBar(
-      title: Text('Kết Quả Xổ Số Hôm Nay'),
+      title:  Text('Kết Quả Ngày $formattedDate'),
       actions: [
         IconButton(
           onPressed: () async {
