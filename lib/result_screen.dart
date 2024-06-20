@@ -265,6 +265,7 @@ Widget build(BuildContext context) {
         Text(
           'Kết Quả Xổ Số Hôm Nay',
           style: TextStyle(
+            fontSize: 19,
             color: Colors.red,
             fontWeight: FontWeight.bold,
           ),
@@ -283,7 +284,10 @@ Widget build(BuildContext context) {
             padding: EdgeInsets.all(16),
             children: [
               if (selectedNumbersLo.isEmpty && selectedNumbersDe.isEmpty)
-                Center(child: Text('Chưa chọn số')),
+                Center(child: Text('Chưa chọn số', style: TextStyle(
+                      color: Colors.red,
+                      fontWeight: FontWeight.bold,
+                    ),)),
               if (selectedNumbersLo.isNotEmpty || selectedNumbersDe.isNotEmpty)
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,

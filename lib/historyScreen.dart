@@ -269,6 +269,7 @@ Widget build(BuildContext context) {
       title:Text(
           'Kết Quả Ngày $formattedDate',
           style: TextStyle(
+            fontSize: 19,
             color: Colors.red,
             fontWeight: FontWeight.bold,
           ),

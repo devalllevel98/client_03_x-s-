@@ -81,6 +81,7 @@ class LotoApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'Lô Đề Game',
       theme: ThemeData(
         primarySwatch: Colors.blue,
