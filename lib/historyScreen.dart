@@ -247,6 +247,34 @@ String checkWinningNumbers(List<int> selectedNumbers, Map<String, Map<String, Li
         });
       });
     });
+    return winningNumbers.isEmpty ? 'Đánh trật!' : 'Chúc mừng đánh trúng!';
+    // return winningNumbers.isEmpty ? 'Đánh trật!' : 'trúng ${winningNumbers.join(", ")}';
+
+  } else {
+    return 'Không có kết quả cho ngày này';
+  }
+}
+
+
+String checkWinningNumbersDe(List<int> selectedNumbers, Map<String, Map<String, List<String>>> results, DateTime selectedDate) {
+  String formattedDate = '${selectedDate.year}-${selectedDate.month}-${selectedDate.day}';
+  
+  if (results.containsKey(formattedDate)) {
+    List<String> winningNumbers = [];
+    selectedNumbers.forEach((num) {
+      String formattedNum = num.toString().padLeft(2, '0');
+      
+      // Only check for special prize (giải đặc biệt)
+      List<String>? specialNumbers = results[formattedDate]!['Giai DB']; // Adjust 'Giải đặc biệt' to match your actual key
+      
+      if (specialNumbers != null) {
+        specialNumbers.forEach((number) {
+          if (number.endsWith(formattedNum)) {
+            winningNumbers.add('Giải đặc biệt: $number');
+          }
+        });
+      }
+    });
 
     return winningNumbers.isEmpty ? 'Đánh trật!' : 'Chúc mừng đánh trúng!';
     // return winningNumbers.isEmpty ? 'Đánh trật!' : 'Chúc mừng đánh trúng!: ${winningNumbers.join(", ")}';
@@ -255,6 +283,7 @@ String checkWinningNumbers(List<int> selectedNumbers, Map<String, Map<String, Li
     return 'Không có kết quả cho ngày này';
   }
 }
+
 
 
 @override
@@ -321,7 +350,7 @@ Widget build(BuildContext context) {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
-                        Text('Đánh Lô:', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                        Text('Đánh Đề:', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                         SizedBox(width: 8),
                         Wrap(
                           spacing: 4,
@@ -351,10 +380,10 @@ Widget build(BuildContext context) {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
-                        Text('Kết Quả Đánh Lô: ', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                        Text('Kết Quả: ', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                         SizedBox(width: 8),
                         Text(
-                         checkWinningNumbers(selectedNumbersLo, results, selectedDate),
+                         checkWinningNumbersDe(selectedNumbersLo, results, selectedDate),
                           style: TextStyle(
                             fontSize: 16,
                             color: Colors.green,
@@ -367,7 +396,7 @@ Widget build(BuildContext context) {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
-                        Text('Đánh Đề:', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                        Text('Đánh Lô:', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                         SizedBox(width: 8),
                         Wrap(
                           spacing: 4,
@@ -399,7 +428,7 @@ Widget build(BuildContext context) {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
-                        Text('Kết Quả Đánh đề: ', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                        Text('Kết Quả: ', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                         SizedBox(width: 8),
                         Text(
                          checkWinningNumbers(selectedNumbersDe, results, selectedDate),

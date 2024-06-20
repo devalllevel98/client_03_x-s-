@@ -175,11 +175,11 @@ Widget buildResultCard(String title, Map<String, List<String>> results) {
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Text(
-          title,
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-        ),
-        SizedBox(height: 8),
+        // Text(
+        //   title,
+        //   style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        // ),
+        SizedBox(height: 4),
         Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: results.entries.map((entry) {
@@ -253,6 +253,35 @@ String checkWinningNumbers(List<int> selectedNumbers, Map<String, Map<String, Li
   }
 }
 
+String checkWinningNumbersDe(List<int> selectedNumbers, Map<String, Map<String, List<String>>> results, DateTime selectedDate) {
+  String formattedDate = '${selectedDate.year}-${selectedDate.month}-${selectedDate.day}';
+  
+  if (results.containsKey(formattedDate)) {
+    List<String> winningNumbers = [];
+    selectedNumbers.forEach((num) {
+      String formattedNum = num.toString().padLeft(2, '0');
+      
+      // Only check for special prize (giải đặc biệt)
+      List<String>? specialNumbers = results[formattedDate]!['Giai DB']; // Adjust 'Giải đặc biệt' to match your actual key
+      
+      if (specialNumbers != null) {
+        specialNumbers.forEach((number) {
+          if (number.endsWith(formattedNum)) {
+            winningNumbers.add('Giải đặc biệt: $number');
+          }
+        });
+      }
+    });
+
+    return winningNumbers.isEmpty ? 'Đánh trật!' : 'Chúc mừng đánh trúng!';
+    // return winningNumbers.isEmpty ? 'Đánh trật!' : 'Chúc mừng đánh trúng!: ${winningNumbers.join(", ")}';
+
+  } else {
+    return 'Không có kết quả cho ngày này';
+  }
+}
+
+
 
 @override
 Widget build(BuildContext context) {
@@ -295,13 +324,14 @@ Widget build(BuildContext context) {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
-                        Text('Đánh Lô:', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                        Text('Đánh Đề:', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                         SizedBox(width: 8),
                         Wrap(
                           spacing: 4,
                           children: selectedNumbersLo.isEmpty
                               ? [Text('Chưa chọn')]
                               : selectedNumbersLo.map((num) {
+                                  print("de ${num}");
                                   return Container(
                                     padding: EdgeInsets.all(4),
                                     decoration: BoxDecoration(
@@ -325,10 +355,10 @@ Widget build(BuildContext context) {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
-                        Text('Kết Quả Đánh Lô: ', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                        Text('Kết Quả: ', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                         SizedBox(width: 8),
                         Text(
-                         showResults ? checkWinningNumbers(selectedNumbersLo, results, selectedDate): "Chưa có kết quả!",
+                         showResults ? checkWinningNumbersDe(selectedNumbersLo, results, selectedDate): "Chưa có kết quả!",
                           style: TextStyle(
                             fontSize: 16,
                             color: Colors.green,
@@ -341,13 +371,14 @@ Widget build(BuildContext context) {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
-                        Text('Đánh Đề:', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                        Text('Đánh Lô:', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                         SizedBox(width: 8),
                         Wrap(
                           spacing: 4,
                           children: selectedNumbersDe.isEmpty
                               ? [Text('Chưa chọn')]
                               : selectedNumbersDe.map((num) {
+                                print("Lô${num}");
                                   return Container(
                                     padding: EdgeInsets.all(4),
                                     decoration: BoxDecoration(
@@ -370,7 +401,7 @@ Widget build(BuildContext context) {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
-                        Text('Kết Quả Đánh đề: ', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                        Text('Kết Quả: ', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                         SizedBox(width: 8),
                         Text(
                          showResults? checkWinningNumbers(selectedNumbersDe, results, selectedDate):"Chưa có kết quả!",
