@@ -138,7 +138,32 @@ class _ResultScreenState extends State<ResultScreen> {
     return randomResults;
   }
 
+  Color getColorForNumber(String number, List<int> selectedNumbers) {
+    int lastTwoDigits = int.parse(number.substring(number.length - 2));
+    return selectedNumbers.contains(lastTwoDigits) ? Colors.green : Colors.blue;
+  }
+
 Widget buildResultCard(String title, Map<String, List<String>> results) {
+  List<String> wonPrizes = [];
+
+  // Function to check if the user has selected any winning numbers in a category
+  bool hasWonInCategory(String category, List<int> selectedNumbers) {
+    if (results.containsKey(category)) {
+      List<String> categoryResults = results[category]!;
+      return categoryResults.any((num) => selectedNumbers.contains(int.parse(num)));
+    }
+    return false;
+  }
+
+  // Check each prize category
+  bool isLoSelected = selectedNumbersLo.isNotEmpty && [
+    'Giai 8', 'Giai 7', 'Giai 6', 'Giai 5', 'Giai 4', 'Giai 3', 'Giai 2', 'Giai 1'
+  ].any((category) => hasWonInCategory(category, selectedNumbersLo));
+
+  bool isDeSelected = selectedNumbersDe.isNotEmpty && [
+    'Giai DB'
+  ].any((category) => hasWonInCategory(category, selectedNumbersDe));
+
   return Card(
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -166,13 +191,14 @@ Widget buildResultCard(String title, Map<String, List<String>> results) {
                   scrollDirection: Axis.horizontal,
                   child: Row(
                     children: entry.value.map((value) {
+                      Color backgroundColor = getColorForNumber(value, selectedNumbersLo);
                       return Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 4.0),
                         child: Container(
                           padding: EdgeInsets.all(8),
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(8),
-                            color: Colors.blue,
+                            color: backgroundColor,
                           ),
                           child: Text(
                             value,
@@ -191,6 +217,43 @@ Widget buildResultCard(String title, Map<String, List<String>> results) {
             );
           }).toList(),
         ),
+        if (isLoSelected || isDeSelected)
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (isLoSelected)
+                  Row(
+                    children: [
+                      Text(
+                        'Kết quả Lô1: ',
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      SizedBox(width: 8),
+                      Text(
+                        'Chúc mừng bạn đã đánh trúng!',
+                        style: TextStyle(color: Colors.green, fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                if (isDeSelected)
+                  Row(
+                    children: [
+                      Text(
+                        'Kết quả Đề: ',
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      SizedBox(width: 8),
+                      Text(
+                        'Chúc mừng bạn đã đánh trúng!',
+                        style: TextStyle(color: Colors.green, fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+              ],
+            ),
+          ),
       ],
     ),
   );
@@ -244,72 +307,100 @@ Widget buildResultCard(String title, Map<String, List<String>> results) {
                           SizedBox(width: 8),
                           Wrap(
                             spacing: 4,
-                            children: selectedNumbersLo.map((num) {
-                              return Container(
-                                padding: EdgeInsets.all(4),
-                                decoration: BoxDecoration(
-                                  color: Color.fromARGB(255, 0, 153, 255),
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                child: Text(
-                                  num.toString().padLeft(2, '0'),
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              );
-                            }).toList(),
+                            children: selectedNumbersLo.isEmpty
+                                ? [Text('Chưa chọn')]
+                                : selectedNumbersLo.map((num) {
+                                    return Container(
+                                      padding: EdgeInsets.all(4),
+                                      decoration: BoxDecoration(
+                                        color: Color.fromARGB(255, 0, 153, 255),
+                                        borderRadius: BorderRadius.circular(20),
+                                      ),
+                                      child: Text(
+                                        num.toString().padLeft(2, '0'),
+                                        style: TextStyle(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    );
+                                  }).toList(),
                           ),
                         ],
                       ),
+                      
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          Text('Kết Quả Đánh Lô: ', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                          //code thêm để ví dụ đánh trúng: chúc mừng đánh trúng : 44, 66. đánh trật báo là không trúng
+                          SizedBox(width: 8),
+                        ],
+                      ),
+
                       SizedBox(height: 8),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.start,
                         children: [
                           Text('Đánh Đề:', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                           SizedBox(width: 8),
-                          Wrap(                            spacing: 4,
-                            children: selectedNumbersDe.map((num) {
-                              return Container(
-                                padding: EdgeInsets.all(4),
-                                decoration: BoxDecoration(
-                                  color: Color.fromARGB(255, 255, 0, 0),
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                child: Text(
-                                  num.toString().padLeft(2, '0'),
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              );
-                            }).toList(),
+                          Wrap(
+                            spacing: 4,
+                            children: selectedNumbersDe.isEmpty
+                                ? [Text('Chưa chọn')]
+                                : selectedNumbersDe.map((num) {
+                                    return Container(
+                                      padding: EdgeInsets.all(4),
+                                      decoration: BoxDecoration(
+                                        color: Color.fromARGB(255, 255, 0, 0),
+                                        borderRadius: BorderRadius.circular(20),
+                                      ),
+                                      child: Text(
+                                        num.toString().padLeft(2, '0'),
+                                        style: TextStyle(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    );
+                                  }).toList(),
                           ),
                         ],
                       ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          Text('Kết Quả Đánh đề: ', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                          SizedBox(width: 8),
+                          //code thêm để ví dụ đánh trúng: chúc mừng đánh trúng : 44, 66... đánh trật báo là không trúng
+                        ],
+                      ),
+                      
+                      SizedBox(height: 8),
                     ],
+                    
+                    
                   ),
                 SizedBox(height: 16),
                 for (var entry in results.entries)
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Ngày ${entry.key}:',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
+                  if (entry.key == '${selectedDate.year}-${selectedDate.month}-${selectedDate.day}')
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Ngày ${entry.key}:',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                      ),
-                      SizedBox(height: 8),
-                      buildResultCard(entry.key, entry.value),
-                      SizedBox(height: 16),
-                    ],
-                  ),
+                        SizedBox(height: 8),
+                        buildResultCard(entry.key, entry.value),
+                        SizedBox(height: 16),
+                      ],
+                    ),
               ],
             )
           : Center(child: CircularProgressIndicator()),
@@ -317,4 +408,4 @@ Widget buildResultCard(String title, Map<String, List<String>> results) {
   }
 }
 
-                           
+
