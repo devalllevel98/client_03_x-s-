@@ -47,7 +47,7 @@ class HomeScreen extends StatelessWidget {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => HistoryScreen()),
+                  MaterialPageRoute(builder: (context) => ResultHisScreen()),
                 );
               },
               child: Text('Lịch sử'),

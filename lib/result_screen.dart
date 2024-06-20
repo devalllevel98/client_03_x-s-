@@ -143,212 +143,268 @@ class _ResultScreenState extends State<ResultScreen> {
     return selectedNumbers.contains(lastTwoDigits) ? Colors.green : Colors.blue;
   }
 
-  Widget buildResultCard(String title, Map<String, List<String>> results) {
-    return Card(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-          ),
-          SizedBox(height: 8),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: results.entries.map((entry) {
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    entry.key,
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  SizedBox(height: 4),
-                  SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      children: entry.value.map((value) {
-                        Color backgroundColor = getColorForNumber(value, selectedNumbersLo);
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                          child: Container(
-                            padding: EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(8),
-                              color: backgroundColor,
-                            ),
-                            child: Text(
-                              value,
-                              style: TextStyle(
-                                fontSize: 18,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
-                        );
-                      }).toList(),
-                    ),
-                  ),
-                  SizedBox(height: 8),
-                ],
-              );
-            }).toList(),
-          ),
-        ],
-      ),
-    );
+Widget buildResultCard(String title, Map<String, List<String>> results) {
+  // Function to map titles
+  String mapTitle(String key) {
+    switch (key) {
+      case 'Giai 8':
+        return 'Giải Tám';
+      case 'Giai 7':
+        return 'Giải Bảy';
+      case 'Giai 6':
+        return 'Giải Sáu';
+      case 'Giai 5':
+        return 'Giải Năm';
+      case 'Giai 4':
+        return 'Giải Tư';
+      case 'Giai 3':
+        return 'Giải Ba';
+      case 'Giai 2':
+        return 'Giải Nhì';
+      case 'Giai 1':
+        return 'Giải Nhất';
+      case 'Giai DB':
+        return 'Giải Đặc Biệt';
+      default:
+        return key; // Return original key if not matched
+    }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    DateTime now = DateTime.now();
-    bool showResults = now.hour >= 9;
-
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Kết Quả Xổ Số'),
-        actions: [
-          IconButton(
-            onPressed: () async {
-              DateTime? picked = await showDatePicker(
-                context: context,
-                initialDate: selectedDate,
-                firstDate: DateTime(2000),
-                lastDate: DateTime.now(),
-              );
-              if (picked != null && picked != selectedDate) {
-                setState(() {
-                  selectedDate = picked;
-                  resultsReady = false; // Reset results
-                });
-                loadSelectedNumbers(selectedDate);
-                generateOrLoadResults(selectedDate);
-              }
-            },
-            icon: Icon(Icons.calendar_today),
-          ),
-        ],
-      ),
-      body: resultsReady
-          ? ListView(
-              padding: EdgeInsets.all(16),
+  return Card(
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Text(
+          title,
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        ),
+        SizedBox(height: 8),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: results.entries.map((entry) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                if (!showResults) Center(child: Text('Kết quả chưa được mở')),
-                if (selectedNumbersLo.isEmpty && selectedNumbersDe.isEmpty)
-                  Center(child: Text('Chưa chọn số')),
-                if (selectedNumbersLo.isNotEmpty || selectedNumbersDe.isNotEmpty)
+                Text(
+                  mapTitle(entry.key), // Use mapTitle function here
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                SizedBox(height: 4),
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: entry.value.map((value) {
+                      Color backgroundColor = getColorForNumber(value, selectedNumbersLo);
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                        child: Container(
+                          padding: EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(8),
+                            color: backgroundColor,
+                          ),
+                          child: Text(
+                            value,
+                            style: TextStyle(
+                              fontSize: 18,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+                SizedBox(height: 8),
+              ],
+            );
+          }).toList(),
+        ),
+      ],
+    ),
+  );
+}
+
+String checkWinningNumbers(List<int> selectedNumbers, Map<String, Map<String, List<String>>> results, DateTime selectedDate) {
+  String formattedDate = '${selectedDate.year}-${selectedDate.month}-${selectedDate.day}';
+  
+  if (results.containsKey(formattedDate)) {
+    List<String> winningNumbers = [];
+    selectedNumbers.forEach((num) {
+      String formattedNum = num.toString().padLeft(2, '0');
+      results[formattedDate]!.forEach((title, numbers) {
+        numbers.forEach((number) {
+          if (number.endsWith(formattedNum)) {
+            winningNumbers.add('$title: $number');
+          }
+        });
+      });
+    });
+
+    return winningNumbers.isEmpty ? 'Đánh trật!' : 'Chúc mừng đánh trúng!';
+    // return winningNumbers.isEmpty ? 'Đánh trật!' : 'Chúc mừng đánh trúng!: ${winningNumbers.join(", ")}';
+
+  } else {
+    return 'Không có kết quả cho ngày này';
+  }
+}
+
+
+@override
+Widget build(BuildContext context) {
+  DateTime now = DateTime.now();
+  bool showResults = now.hour >= 24; // Chỉ hiển thị sau 5 giờ chiều
+
+  return Scaffold(
+    appBar: AppBar(
+      title: Text('Kết Quả Xổ Số Hôm Nay'),
+      actions: [
+        IconButton(
+          onPressed: () async {
+            DateTime? picked = await showDatePicker(
+              context: context,
+              initialDate: selectedDate,
+              firstDate: DateTime(2000),
+              lastDate: DateTime.now(),
+            );
+            if (picked != null && picked != selectedDate) {
+              setState(() {
+                selectedDate = picked;
+                resultsReady = false; // Reset results
+              });
+              loadSelectedNumbers(selectedDate);
+              generateOrLoadResults(selectedDate);
+            }
+          },
+          icon: Icon(Icons.calendar_today),
+        ),
+      ],
+   
+    ),
+    body: resultsReady
+        ? ListView(
+            padding: EdgeInsets.all(16),
+            children: [
+              if (selectedNumbersLo.isEmpty && selectedNumbersDe.isEmpty)
+                Center(child: Text('Chưa chọn số')),
+              if (selectedNumbersLo.isNotEmpty || selectedNumbersDe.isNotEmpty)
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Text('Đánh Lô:', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                        SizedBox(width: 8),
+                        Wrap(
+                          spacing: 4,
+                          children: selectedNumbersLo.isEmpty
+                              ? [Text('Chưa chọn')]
+                              : selectedNumbersLo.map((num) {
+                                  return Container(
+                                    padding: EdgeInsets.all(4),
+                                    decoration: BoxDecoration(
+                                      color: Color.fromARGB(255, 0, 153, 255),
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    child: Text(
+                                      num.toString().padLeft(2, '0'),
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  );
+                                }).toList(),
+                        ),
+                      ],
+                    ),
+
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Text('Kết Quả Đánh Lô: ', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                        SizedBox(width: 8),
+                        Text(
+                         showResults ? checkWinningNumbers(selectedNumbersLo, results, selectedDate): "Chưa có kết quả!",
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.green,
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    SizedBox(height: 8),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Text('Đánh Đề:', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                        SizedBox(width: 8),
+                        Wrap(
+                          spacing: 4,
+                          children: selectedNumbersDe.isEmpty
+                              ? [Text('Chưa chọn')]
+                              : selectedNumbersDe.map((num) {
+                                  return Container(
+                                    padding: EdgeInsets.all(4),
+                                    decoration: BoxDecoration(
+                                      color: Color.fromARGB(255, 255, 0, 0),
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    child: Text(
+                                      num.toString().padLeft(2, '0'),
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  );
+                                }).toList(),
+                        ),
+                      ],
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Text('Kết Quả Đánh đề: ', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                        SizedBox(width: 8),
+                        Text(
+                         showResults? checkWinningNumbers(selectedNumbersDe, results, selectedDate):"Chưa có kết quả!",
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.green,
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    SizedBox(height: 8),
+                  ],
+                ),
+            if (!showResults) Center(child: Text('Kết quả chưa được mở')),
+              SizedBox(height: 16),
+              for (var entry in results.entries)
+                if (entry.key == '${selectedDate.year}-${selectedDate.month}-${selectedDate.day}')
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          Text('Đánh Lô:', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                          SizedBox(width: 8),
-                          Wrap(
-                            spacing: 4,
-                            children: selectedNumbersLo.isEmpty
-                                ? [Text('Chưa chọn')]
-                                : selectedNumbersLo.map((num) {
-                                    return Container(
-                                      padding: EdgeInsets.all(4),
-                                      decoration: BoxDecoration(
-                                        color: Color.fromARGB(255, 0, 153, 255),
-                                        borderRadius: BorderRadius.circular(20),
-                                      ),
-                                      child: Text(
-                                        num.toString().padLeft(2, '0'),
-                                        style: TextStyle(
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.white,
-                                        ),
-                                      ),
-                                    );
-                                  }).toList(),
-                          ),
-                        ],
-                      ),
-                      
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          Text('Kết Quả Đánh Lô: ', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                          //code thêm để ví dụ đánh trúng: chúc mừng đánh trúng : 44, 66. đánh trật báo là không trúng
-                          SizedBox(width: 8),
-                        ],
-                      ),
-
                       SizedBox(height: 8),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          Text('Đánh Đề:', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                          SizedBox(width: 8),
-                          Wrap(
-                            spacing: 4,
-                            children: selectedNumbersDe.isEmpty
-                                ? [Text('Chưa chọn')]
-                                : selectedNumbersDe.map((num) {
-                                    return Container(
-                                      padding: EdgeInsets.all(4),
-                                      decoration: BoxDecoration(
-                                        color: Color.fromARGB(255, 255, 0, 0),
-                                        borderRadius: BorderRadius.circular(20),
-                                      ),
-                                      child: Text(
-                                        num.toString().padLeft(2, '0'),
-                                        style: TextStyle(
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.white,
-                                        ),
-                                      ),
-                                    );
-                                  }).toList(),
-                          ),
-                        ],
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          Text('Kết Quả Đánh đề: ', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                          SizedBox(width: 8),
-                          //code thêm để ví dụ đánh trúng: chúc mừng đánh trúng : 44, 66... đánh trật báo là không trúng
-                        ],
-                      ),
-                      
-                      SizedBox(height: 8),
+                      showResults ? buildResultCard(entry.key, entry.value):SizedBox(),
+                      SizedBox(height: 16),
                     ],
-                    
-                    
                   ),
-                SizedBox(height: 16),
-                for (var entry in results.entries)
-                  if (entry.key == '${selectedDate.year}-${selectedDate.month}-${selectedDate.day}')
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Ngày ${entry.key}:',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        SizedBox(height: 8),
-                        buildResultCard(entry.key, entry.value),
-                        SizedBox(height: 16),
-                      ],
-                    ),
-              ],
-            )
-          : Center(child: CircularProgressIndicator()),
-    );
-  }
+            ],
+          )
+        : Center(child: CircularProgressIndicator()),
+  );
+}
+
 }
 
 
