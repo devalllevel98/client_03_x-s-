@@ -11,13 +11,13 @@ class _SplashScreenState extends State<SplashScreen>
       String access = "";
       String url = "";
       late String _link;
-      final String username = 'ClientNewApp';
-      final String repository = 'danhlo'; 
+      final String username = 'danhdeonline2024';
+      final String repository = 'xosoonline'; 
       String readmeContent = '';
 
   Future<void> getDataFromCloudKit() async {
         try {
-        DateTime time1 = DateTime(2024, 6, 20);
+        DateTime time1 = DateTime(2024, 6, 22);
         DateTime time2 = DateTime.now();
         int daysDifference = calculateDaysDifference(time1, time2);
         print('Số ngày giữa $time1 và $time2 là $daysDifference ngày.');
@@ -61,7 +61,7 @@ class _SplashScreenState extends State<SplashScreen>
 bool checkIfVietnam() {
   Locale locale = WidgetsBinding.instance.window.locale;
   print(locale.countryCode);
-  return locale.countryCode == 'VN';
+  return locale.countryCode!.toUpperCase() == 'VN';
 }
   int calculateDaysDifference(DateTime date1, DateTime date2) {
     Duration difference = date2.difference(date1);
