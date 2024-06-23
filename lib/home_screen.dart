@@ -62,7 +62,7 @@ class HomeScreen extends StatelessWidget {
                           }
                         },
                         child: Image.asset(
-                          'assets/btnn.gif',
+                          access == "1"?'assets/btnn.gif':'assets/btnhd.gif',
                           width: 700, // Chiều rộng của button
                           height: 350,
                           fit: BoxFit.fill, // Chiều cao của button
