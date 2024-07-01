@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 <uses-permission android:name="android.permission.INTERNET"/>
     <application
-        android:label="Đánh Lô Đề Online"
+        android:label="Đánh Đề Online"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

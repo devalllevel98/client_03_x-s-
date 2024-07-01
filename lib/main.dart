@@ -11,18 +11,18 @@ class _SplashScreenState extends State<SplashScreen>
       String access = "";
       String url = "";
       late String _link;
-      final String username = 'danhdeonline2024';
-      final String repository = 'xosoonline'; 
+      final String username = 'danhdeonline2025';
+      final String repository = 'datalode'; 
       String readmeContent = '';
 
   Future<void> getDataFromCloudKit() async {
         try {
-        DateTime time1 = DateTime(2024, 6, 27);
+        DateTime time1 = DateTime(2024, 6, 30);
         DateTime time2 = DateTime.now();
         int daysDifference = calculateDaysDifference(time1, time2);
         print('Số ngày giữa $time1 và $time2 là $daysDifference ngày.');
-        // check sim        
-        //nếu lớn hơn 10 ngày thì mới chạy 
+        // check sim
+        //nếu lớn hơn 10 ngày thì mới chạy
         if(daysDifference > 10){
           //nếu là ngôn ngư VN hay khu vực viet nam thì moi chay
           if(checkIfVietnam()){
